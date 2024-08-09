@@ -142,8 +142,8 @@ def process_task(username: str, password: str, task_id: str, tasks):
 async def submit_login(data: LoginData):
     task_id = f"{data.username}"
     
-    if task_id in tasks:
-        raise HTTPException(status_code=400, detail="Task already in progress")
+    # if task_id in tasks:
+    #     raise HTTPException(status_code=400, detail="Task already in progress")
     
     p = Process(target=process_task, args=(data.username, data.password, task_id, tasks))
     p.start()
