@@ -1,0 +1,11 @@
+__pycache__
+build
+dist
+env
+*.bat
+*.sh
+*.exe
+*.json
+*.spec
+/log
+/captchas

@@ -1,0 +1,6 @@
+services:
+  weiban:
+    image: kalicyh/weiban:v1.0.0
+    container_name: weiban
+    ports:
+      - "8010:8000"

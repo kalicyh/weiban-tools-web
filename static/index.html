@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>一键微伴</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f4f8;
+        }
+        .container {
+            display: flex;
+            width: 100%;
+            max-width: 1200px;
+            padding: 2rem;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        .left, .right {
+            width: 50%;
+            padding: 1rem;
+        }
+        .left {
+            border-right: 1px solid #ddd;
+            text-align: center;
+        }
+        .right {
+            text-align: center;
+        }
+        h1 {
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+            color: #333;
+        }
+        .input-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            justify-content: center;
+        }
+        .input-group label {
+            display: block;
+            margin-right: 0.5rem;
+            font-size: 0.875rem;
+            color: #666;
+            text-align: right;
+            width: 80px; /* Fixed width for labels */
+        }
+        .input-group input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            max-width: 300px;
+        }
+        .button-group {
+            display: flex;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+        .button-group button {
+            width: 100%;
+            max-width: 150px;
+            padding: 0.75rem;
+            margin-left: 10px;
+            border: none;
+            border-radius: 4px;
+            color: #ffffff;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        .button-group .get-code {
+            background-color: #007bff;
+        }
+        .button-group .submit {
+            background-color: #28a745;
+        }
+        .button-group button:hover {
+            opacity: 0.9;
+        }
+        .status {
+            margin-top: 1rem;
+            font-size: 0.875rem;
+            color: #666;
+            text-align: left;
+            white-space: pre-wrap; /* Preserve whitespace and line breaks */
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 1rem;
+            background-color: #f9f9f9;
+            height: 300px;
+            overflow-y: auto;
+        }
+        .hidden {
+            display: none;
+        }
+        .file-list-container {
+            width: 100%;
+            max-width: 1200px;
+            padding: 2rem;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .file-list-container h1 {
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+            color: #333;
+        }
+        .file-list-container ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        .file-list-container li {
+            margin: 0.5rem 0;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="left">
+            <h1>登录</h1>
+            <form id="loginForm">
+                <div class="input-group">
+                    <label for="loginUsername">账号</label>
+                    <input type="text" id="loginUsername" name="username" placeholder="请输入账号" required>
+                </div>
+                <div class="input-group">
+                    <label for="loginPassword">密码</label>
+                    <input type="password" id="loginPassword" name="password" placeholder="请输入密码" required>
+                </div>
+                <div class="button-group">
+                    <button type="submit" class="submit">提交</button>
+                </div>
+            </form>
+            <form id="codeForm" class="hidden">
+                <img id="captchaImage" class="captcha-image" src="" alt="验证码图像">
+                <div class="input-group">
+                    <label for="captcha">验证码</label>
+                    <input type="text" id="captcha" name="captcha" placeholder="请输入验证码" required>
+                </div>
+                <div class="button-group">
+                    <button type="button" class="get-code" onclick="getCaptcha()">获取验证码</button>
+                    <button type="submit" class="submit">提交</button>
+                    <button type="button" class="get-code" onclick="back()">返回</button>
+                </div>
+            </form>
+            <br/>
+            <span>提交后点击获取验证码，输入验证码后再次提交</span><br/>
+            <br/>
+            <span>显示登录成功即可，右边会显示实时日志，每五秒刷新一次</span><br/>
+            <span>软件仅限浙江财经大学东方学院使用</span><br/>
+            <br/>
+            <span>有问题可以联系前沿科技社社长：wu_ying1021</span><br/>
+            <span>欢迎大家来使用微信小程序：东fun心墙</span>
+        </div>
+        <div class="right">
+            <h1>实时日志</h1>
+            <div id="logContainer" class="status">加载日志中...</div>
+        </div>
+    </div>
+    <div class="file-list-container">
+        <h1>使用记录</h1>
+        <span>仅记录账号开头</span>
+        <span id="liCount"></span>
+        <ul id="fileList"></ul>
+    </div>
+    <script>
+        const baseUrl = 'https://wb.xn--5kv132d.com'; // FastAPI 服务器的基本 URL
+
+        async function getCaptcha() {
+            const username = document.getElementById('loginUsername').value;
+            const response = await fetch(`${baseUrl}/captcha-url?task_id=${username}`);
+            const captchaImage = document.getElementById('captchaImage');
+            if (response.ok) {
+                const result = await response.json();
+                captchaImage.src = result.url;
+                alert(`验证码链接: ${result.url}`);
+            } else {
+                alert('获取验证码失败');
+            }
+        }
+
+        async function back() {
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('codeForm').classList.add('hidden');
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const data = {
+                username: formData.get('username'),
+                password: formData.get('password')
+            };
+
+            const response = await fetch(`${baseUrl}/submit-login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                document.getElementById('loginForm').classList.add('hidden');
+                document.getElementById('codeForm').classList.remove('hidden');
+            } else {
+                alert('登录失败或者任务已经在运行了');
+            }
+        });
+
+        document.getElementById('codeForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const data = {
+                username: document.getElementById('loginUsername').value,
+                captcha: formData.get('captcha')
+            };
+
+            const response = await fetch(`${baseUrl}/submit-code`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                alert('登录成功');
+            } else {
+                alert('登录失败');
+            }
+        });
+
+        async function fetchLogs() {
+            const taskId = document.getElementById('loginUsername').value;
+            try {
+                const response = await fetch(`${baseUrl}/status/${taskId}`);
+                const result = await response.json();
+                const logContainer = document.getElementById('logContainer');
+
+                if (response.ok) {
+                    logContainer.textContent = result.logs;
+                } else {
+                    logContainer.textContent = '无法获取日志';
+                }
+            } catch (error) {
+                console.error('获取日志失败:', error);
+                document.getElementById('logContainer').textContent = '获取日志失败';
+            }
+        }
+        setInterval(fetchLogs, 5000);
+        fetchLogs();
+        document.addEventListener('DOMContentLoaded', () => {
+            fetch(`${baseUrl}/file`)
+                .then(response => response.json())
+                .then(data => {
+                    const fileList = document.getElementById('fileList');
+                    data.forEach(name => {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = name;
+                        fileList.appendChild(listItem);
+                    });
+                    const liCount = fileList.getElementsByTagName('li').length;
+                    document.getElementById('liCount').textContent = `用户数量: ${liCount}`;
+                })
+                .catch(error => {
+                    console.error('获取文件名失败:', error);
+                });
+        });
+    </script>
+</body>
+</html>
