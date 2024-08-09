@@ -3,7 +3,13 @@
     <img src="https://badges.toozhao.com/badges/01HAMCFS652W02Z5H3CE02M4JY/blue.svg" alt="Visitors"/>
 </p>
 
-本项目基于`安全微伴自动刷课助手`增加fastapi方式调用
+本项目基于`安全微伴自动刷课助手`
+
+- 增加api方式调用
+
+- 支持docker部署
+
+目前学校固定成`浙江财经大学东方学院`，有需要可以自己改
 
 ```sh
 poetry install
@@ -11,6 +17,7 @@ poetry shell
 python3 main.py
 ```
 
+基于项目 [pooneyy/weiban-tool](https://github.com/pooneyy/weiban-tool) 修改
 
 相关项目：[安全微伴题库](https://github.com/pooneyy/WeibanQuestionsBank) | 安全微伴自动刷课助手
 
