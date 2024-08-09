@@ -11,6 +11,8 @@
 
 目前学校固定成`浙江财经大学东方学院`，有需要可以自己改
 
+前端不应该使用baseurl的，懒得改了
+
 ```sh
 poetry install
 poetry shell
